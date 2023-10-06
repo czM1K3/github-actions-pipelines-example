@@ -29,12 +29,27 @@ jobs:
     name: Deploy project
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: web-output
-      - name: Show current path
-        run: pwd
-      - name: List files
-        run: ls
+      - name: Fetch Teleport binaries
+        uses: teleport-actions/setup@v1
+        with:
+          version: 14.0.1
+      - name: Fetch credentials using Machine ID
+        id: auth
+        uses: teleport-actions/auth@v1
+        with:
+          proxy: teleport.madsoft.cz:443
+          token: github-example-token
+          certificate-ttl: 1h
+          anonymous-telemetry: 0
+      - name: Delete old files
+        run: tsh -i ${{ steps.auth.outputs.identity-file }} ssh root@debian "rm -rf /var/www/html"
+      - name: Copy new files
+        run: tsh -i ${{ steps.auth.outputs.identity-file }} scp ${{ github.workspace }} root@debian:/var/www/html
