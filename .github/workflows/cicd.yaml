@@ -52,4 +52,4 @@ jobs:
       - name: Delete old files
         run: tsh -i ${{ steps.auth.outputs.identity-file }} ssh root@debian "rm -rf /var/www/html"
       - name: Copy new files
-        run: tsh -i ${{ steps.auth.outputs.identity-file }} scp ${{ github.workspace }} root@debian:/var/www/html
+        run: tsh -i ${{ steps.auth.outputs.identity-file }} scp -r ${{ github.workspace }} root@debian:/var/www/html
